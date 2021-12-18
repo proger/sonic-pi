@@ -27,7 +27,7 @@ mkdir -p "${SCRIPT_DIR}/build"
 
 echo "Generating makefiles..."
 cd "${SCRIPT_DIR}/build"
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=\"$config\" ..
+cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=/opt/homebrew -DVCPKG_TARGET_TRIPLET=arm64-osx -DCMAKE_BUILD_TYPE=\"$config\" ..
 
 
 # Restore working directory as it was prior to this script running...

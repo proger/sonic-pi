@@ -18,10 +18,10 @@
 
 // Qt stuff
 #include <QAction>
+#include <QActionGroup>
 #include <QApplication>
 #include <QBoxLayout>
 #include <QDesktopServices>
-#include <QDesktopWidget>
 #include <QDialogButtonBox>
 #include <QDockWidget>
 #include <QFileDialog>
@@ -317,7 +317,9 @@ void MainWindow::showWelcomeScreen()
         QFile file(":/html/startup.html");
         file.open(QFile::ReadOnly | QFile::Text);
         QTextStream st(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         st.setCodec("UTF-8");
+#endif
         QString source = st.readAll();
         source = source.replace("214dx", QString("%1").arg(ScaleHeightForDPI(214)));
         source = source.replace("262dx", QString("%1").arg(ScaleHeightForDPI(262)));
@@ -732,7 +734,7 @@ void MainWindow::setupWindowStructure()
     mainWidgetLayout = new QVBoxLayout;
     mainWidgetLayout->addWidget(tabs);
     mainWidgetLayout->addWidget(errorPane);
-    mainWidgetLayout->setMargin(0);
+    mainWidgetLayout->setContentsMargins(0, 0, 0, 0);
     mainWidget = new QWidget;
     mainWidget->setFocusPolicy(Qt::NoFocus);
     errorPane->hide();
@@ -821,10 +823,10 @@ void MainWindow::updateFullScreenMode()
 #ifdef Q_OS_WIN
         this->setWindowFlags(Qt::FramelessWindowHint);
 #endif
-        int currentScreen = QApplication::desktop()->screenNumber(this);
         statusBar()->showMessage(tr("Full screen mode on."), 2000);
-#if QT_VERSION >= 0x050400
-        //requires Qt5
+
+#if QT_VERSION >= 0x050400 && QT_VERSION <= 0x060000
+        int currentScreen = QApplication::desktop()->screenNumber(this);
         this->windowHandle()->setScreen(qApp->screens()[currentScreen]);
 #endif
         this->setWindowState(Qt::WindowFullScreen);
@@ -1421,7 +1423,7 @@ bool MainWindow::loadFile()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Load Sonic Pi Buffer"), lastDir, QString("%1 (*.rb *.txt);;%2 (*.txt);;%3 (*.rb);;%4 (*.*)").arg(tr("Buffer files")).arg(tr("Text files")).arg(tr("Ruby files")).arg(tr("All files")), &selfilter);
     if (!fileName.isEmpty())
     {
-        QFileInfo fi = fileName;
+        QFileInfo fi(fileName);
         gui_settings->setValue("lastDir", fi.dir().absolutePath());
         SonicPiScintilla* p = (SonicPiScintilla*)tabs->currentWidget();
         loadFile(fileName, p);
@@ -1441,7 +1443,7 @@ bool MainWindow::saveAs()
 
     if (!fileName.isEmpty())
     {
-        QFileInfo fi = fileName;
+        QFileInfo fi(fileName);
         gui_settings->setValue("lastDir", fi.dir().absolutePath());
         if (!fileName.contains(QRegularExpression("\\.[a-z]+$")))
         {
@@ -3028,7 +3030,9 @@ QString MainWindow::readFile(QString name)
     }
 
     QTextStream st(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     st.setCodec("UTF-8");
+#endif
     return st.readAll();
 }
 
@@ -3064,7 +3068,9 @@ void MainWindow::createInfoPane()
         file.open(QFile::ReadOnly | QFile::Text);
 
         QTextStream st(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         st.setCodec("UTF-8");
+#endif
         QString source = st.readAll();
         source = source.replace("100dx", QString("%1").arg(ScaleHeightForDPI(100)));
         source = source.replace("254dx", QString("%1").arg(ScaleHeightForDPI(254)));
@@ -3090,7 +3096,7 @@ void MainWindow::createInfoPane()
     connect(infoWidg, SIGNAL(closed()), this, SLOT(about()));
 
     QAction* closeInfoAct = new QAction(this);
-    closeInfoAct->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_W));
+    closeInfoAct->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
     connect(closeInfoAct, SIGNAL(triggered()), this, SLOT(about()));
     infoWidg->addAction(closeInfoAct);
 }
@@ -3134,7 +3140,7 @@ void MainWindow::toggleRecording()
         QString fileName = QFileDialog::getSaveFileName(this, tr("Save Recording"), lastDir, tr("Wavefile (*.wav)"));
         if (!fileName.isEmpty())
         {
-            QFileInfo fi = fileName;
+            QFileInfo fi(fileName);
             gui_settings->setValue("lastDir", fi.dir().absolutePath());
             Message msg("/save-recording");
             msg.pushStr(guiID.toStdString());
@@ -3332,7 +3338,9 @@ void MainWindow::loadFile(const QString& fileName, SonicPiScintilla*& text)
     }
 
     QTextStream in(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     in.setCodec("UTF-8");
+#endif
     QApplication::setOverrideCursor(Qt::WaitCursor);
     text->setText(in.readAll());
     file.close();
@@ -3354,7 +3362,9 @@ bool MainWindow::saveFile(const QString& fileName, SonicPiScintilla* text)
     }
 
     QTextStream out(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     out.setCodec("UTF-8");
+#endif
     QApplication::setOverrideCursor(Qt::WaitCursor);
     QString code = text->text();
 #if defined(Q_OS_WIN)
@@ -3482,7 +3492,7 @@ void MainWindow::addHelpPage(QListWidget* nameList,
         nameList->addItem(item);
         entry.entryIndex = nameList->count() - 1;
 
-        if (helpPages[i].keyword != NULL)
+        if (helpPages[i].keyword.isNull() == false)
         {
             helpKeywords.insert(helpPages[i].keyword, entry);
             // magic numbers ahoy

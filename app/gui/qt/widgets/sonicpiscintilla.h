@@ -84,6 +84,6 @@ signals:
     void dragMoveEvent(QDragMoveEvent *event);
     bool event(QEvent *evt);
     bool autoIndent;
-    QMutex *mutex;
+    QRecursiveMutex *mutex;
 
 };

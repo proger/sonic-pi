@@ -21,6 +21,10 @@ if((${BUILD_32BIT}) AND (DEFINED ENV{QT_INSTALL_LOCATION32}))
 elseif(DEFINED ENV{QT_INSTALL_LOCATION})
   message(STATUS "Setting prefix to user-defined Qt install location: $ENV{QT_INSTALL_LOCATION}")
   set(CMAKE_PREFIX_PATH $ENV{QT_INSTALL_LOCATION})
+elseif(APPLE AND EXISTS /opt/homebrew/opt/qt@6)
+  # Homebrew on Apple Silicon installs Qt into /opt/homebrew/opt/qt@6
+  message(STATUS "Setting prefix to Homebrew's Qt install location: /opt/homebrew/opt/qt@6")
+  set(CMAKE_PREFIX_PATH /opt/homebrew/opt/qt@6)
 elseif(APPLE AND EXISTS /usr/local/opt/qt@5)
   # Homebrew installs Qt into/usr/local/qt5
   message(STATUS "Setting prefix to Homebrew's Qt install location: /usr/local/opt/qt@5")
@@ -36,7 +40,7 @@ set(QT_TOOLS_DIR ${CMAKE_PREFIX_PATH}/bin)
 set_property(GLOBAL PROPERTY AUTOMOC_FOLDER Automoc)
 set_property(GLOBAL PROPERTY AUTOGEN_TARGETS_FOLDER Automoc)
 
-find_package(Qt5 COMPONENTS Core Widgets Gui Concurrent Network OpenGL PrintSupport Xml Svg WebEngineWidgets REQUIRED)
+find_package(Qt6 COMPONENTS Core Widgets Gui Concurrent Network OpenGL OpenGLWidgets PrintSupport Xml Svg WebEngineWidgets REQUIRED)
 find_package(Threads REQUIRED)
 
 # We build QScintilla as part of the main project to make it easy to debug/fix
@@ -131,7 +135,7 @@ if (APPLE)
     )
   file(
     GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/run-macdeployqt.sh"
-    CONTENT "PATH=$PATH:/usr/local/opt/qt@5/bin macdeployqt \"$1\""
+    CONTENT "PATH=$PATH:/opt/homebrew/opt/qt@6/bin macdeployqt \"$1\""
     )
 
   add_custom_command(
@@ -181,9 +185,9 @@ target_include_directories(${APP_NAME}
     ${QTAPP_ROOT}/visualizer
     ${QTAPP_ROOT}/widgets
     ${QTAPP_ROOT}/Utils
-    ${Qt5Widgets_INCLUDE_DIRS}
-    ${Qt5Gui_INCLUDE_DIRS}
-    ${Qt5Core_INCLUDE_DIRS}
+    ${Qt6Widgets_INCLUDE_DIRS}
+    ${Qt6Gui_INCLUDE_DIRS}
+    ${Qt6Core_INCLUDE_DIRS}
     ${CMAKE_BINARY_DIR}
     include)
 
@@ -191,13 +195,14 @@ target_link_libraries(${APP_NAME}
     PRIVATE
     SonicPi::API
     QScintilla
-    Qt5::Core
-    Qt5::Gui
-    Qt5::Widgets
-    Qt5::OpenGL
-    Qt5::Concurrent
-    Qt5::Network
-    Qt5::WebEngineWidgets
+    Qt6::Core
+    Qt6::Gui
+    Qt6::Widgets
+    Qt6::OpenGL
+    Qt6::OpenGLWidgets
+    Qt6::Concurrent
+    Qt6::Network
+    Qt6::WebEngineWidgets
     Threads::Threads)
 
 # Compile options and OS specific libraries

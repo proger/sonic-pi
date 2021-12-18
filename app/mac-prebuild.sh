@@ -32,7 +32,7 @@ if [ ! -f "vcpkg/vcpkg" ]; then
 fi
 
 cd vcpkg
-triplet=(x64-osx)
+triplet=(arm64-osx)
 
 if [ "$no_imgui" == true ]
 then
@@ -98,7 +98,7 @@ cp "${SCRIPT_DIR}"/gui/qt/utils/ruby_help.tmpl "${SCRIPT_DIR}"/gui/qt/utils/ruby
 
 echo "Updating GUI translation files..."
 # Use lrelease on PATH if available otherwise assume Qt was installed via homebrew
-PATH="$PATH":/usr/local/opt/qt@5/bin lrelease "${SCRIPT_DIR}"/gui/qt/lang/*.ts
+PATH="$PATH":/opt/homebrew/opt/qt@6/bin lrelease "${SCRIPT_DIR}"/gui/qt/lang/*.ts
 
 echo "Compiling Erlang/Elixir files..."
 cd "${SCRIPT_DIR}"/server/beam/tau

@@ -37,7 +37,7 @@ SonicPiScintilla::SonicPiScintilla(SonicPiLexer *lexer, SonicPiTheme *theme, QSt
   standardCommands()->clearAlternateKeys();
   QString skey;
   QSettings settings(QSettings::IniFormat, QSettings::UserScope, "sonic-pi.net", "gui-keys-bindings");
-  mutex = new QMutex(QMutex::Recursive);
+  mutex = new QRecursiveMutex();
 
 #if defined(Q_OS_MAC)
   int SPi_CTRL = Qt::META;
